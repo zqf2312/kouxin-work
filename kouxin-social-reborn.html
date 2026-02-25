@@ -1,0 +1,2147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口信 - 熟人社交</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================
+           口信·熟人社交生态重构版
+           设计哲学：温暖、生动、有生活感
+           AI是背景，真人社交是主角
+        ============================================ */
+
+        :root {
+            /* 温暖配色系统 */
+            --coral: #FF7E5F;
+            --coral-light: #FFB4A2;
+            --mint: #4ECDC4;
+            --mint-light: #A8E6CF;
+
+            /* 中性色 */
+            --bg-body: #F5F7FA;
+            --bg-card: #FFFFFF;
+            --bg-warm: #FEF9F6;
+            --bg-gray: #F0F2F5;
+
+            /* 文字 */
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            --text-muted: #B0B8C1;
+
+            /* 边框与分割 */
+            --border-light: rgba(0, 0, 0, 0.06);
+            --divider: rgba(0, 0, 0, 0.04);
+
+            /* 阴影 */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+            /* 圆角 */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+
+            /* 过渡 */
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'PingFang SC', sans-serif;
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 0;
+            color: var(--text-primary);
+        }
+
+        /* 手机框架 */
+        .phone-frame {
+            width: 375px;
+            min-height: 812px;
+            background: var(--bg-body);
+            border-radius: 40px;
+            box-shadow:
+                0 0 0 12px #1C1C1E,
+                0 25px 80px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1C1C1E;
+            border-radius: 0 0 24px 24px;
+            z-index: 1000;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px 6px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-bar .time { letter-spacing: 0.3px; }
+        .status-bar .icons {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .status-bar .icons i { font-size: 14px; }
+
+        /* 主内容容器 */
+        .main-content {
+            height: calc(100% - 80px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+
+        /* 页面切换 */
+        .page {
+            display: none;
+            min-height: 100%;
+        }
+        .page.active {
+            display: block;
+            animation: pageIn 0.3s ease;
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           公用组件
+        ============================================ */
+
+        /* 顶部导航栏 */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px 12px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--coral) 0%, var(--mint) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .top-action-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-full);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .top-action-btn:hover { transform: scale(1.05); }
+        .top-action-btn:active { transform: scale(0.95); }
+
+        /* 搜索框 */
+        .search-bar {
+            margin: 0 16px 16px;
+            position: relative;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            border: none;
+            border-radius: var(--radius-full);
+            background: var(--bg-gray);
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+        }
+        .search-bar input::placeholder { color: var(--text-tertiary); }
+        .search-bar i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 15px;
+        }
+
+        /* 头像组件 */
+        .avatar {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--coral-light) 0%, var(--mint-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-small { width: 40px; height: 40px; font-size: 16px; }
+        .avatar-large { width: 56px; height: 56px; font-size: 24px; }
+        .avatar-xl { width: 72px; height: 72px; font-size: 32px; border: 3px solid white; }
+
+        /* 在线状态指示 */
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--mint);
+            border: 2px solid white;
+        }
+        .status-dot.away { background: #FBBF24; }
+        .status-dot.offline { background: var(--text-muted); }
+
+        /* 故事环 */
+        .story-ring {
+            position: relative;
+            padding: 3px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral) 0%, var(--mint) 100%);
+        }
+        .story-ring .avatar {
+            border: 2px solid white;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* AI标签 */
+        .ai-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 6px;
+            background: linear-gradient(135deg, var(--coral) 0%, var(--mint) 100%);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--coral) 0%, #FF9F87 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: var(--bg-gray);
+            color: var(--text-secondary);
+        }
+
+        /* ============================================
+           页面1：消息
+        ============================================ */
+
+        /* 好友状态故事条 */
+        .status-stories {
+            padding: 8px 0 16px;
+            margin-bottom: 8px;
+        }
+        .stories-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 4px 16px;
+            scrollbar-width: none;
+        }
+        .stories-scroll::-webkit-scrollbar { display: none; }
+
+        .story-item {
+            flex-shrink: 0;
+            text-align: center;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+        .story-item:hover { transform: translateY(-2px); }
+        .story-item.add .story-ring {
+            background: var(--bg-gray);
+            padding: 0;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .story-item.add .story-ring i {
+            font-size: 22px;
+            color: var(--coral);
+        }
+
+        .story-avatar-wrap {
+            width: 58px;
+            height: 58px;
+            margin-bottom: 6px;
+        }
+        .story-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            max-width: 58px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .story-preview {
+            font-size: 10px;
+            color: var(--text-muted);
+            max-width: 58px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+
+        /* 对话列表 */
+        .chat-list {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            min-height: 400px;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background var(--transition);
+            border-bottom: 1px solid var(--divider);
+        }
+        .chat-item:hover { background: rgba(0,0,0,0.01); }
+        .chat-item:active { background: rgba(0,0,0,0.03); }
+        .chat-item.pinned { background: var(--bg-warm); }
+
+        .chat-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .chat-name {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chat-name .group-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: var(--mint-light);
+            color: var(--mint);
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .chat-preview-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-preview-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-badge {
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            background: var(--coral);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-icons {
+            display: flex;
+            gap: 4px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* AI助手折叠区 */
+        .ai-section {
+            margin-top: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, rgba(255,126,95,0.05) 0%, rgba(78,205,196,0.05) 100%);
+            border-top: 1px dashed var(--border-light);
+        }
+        .ai-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .ai-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .ai-label i {
+            color: var(--coral);
+        }
+        .ai-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* ============================================
+           页面2：联系人
+        ============================================ */
+        .contacts-add-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 16px 16px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+        }
+        .contacts-add-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .contacts-add-btn i { color: var(--coral); font-size: 18px; }
+        .contacts-add-btn span { font-size: 15px; font-weight: 500; }
+
+        /* 联系人分组 */
+        .contact-group {
+            margin-bottom: 8px;
+        }
+        .group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-gray);
+        }
+        .group-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .group-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* 联系人项 */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: background var(--transition);
+            border-bottom: 1px solid var(--divider);
+        }
+        .contact-item:active { background: rgba(0,0,0,0.02); }
+
+        .contact-info { flex: 1; }
+        .contact-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .contact-status {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .contact-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--mint);
+        }
+        .contact-status.music::before { background: #8B5CF6; }
+        .contact-status.sport::before { background: var(--coral); }
+        .contact-status.dnd::before { background: var(--text-muted); }
+
+        /* 可能认识的人 */
+        .suggested-section {
+            padding: 16px;
+            background: var(--bg-card);
+        }
+        .suggested-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .suggested-list {
+            display: flex;
+            gap: 12px;
+        }
+        .suggested-card {
+            flex: 1;
+            padding: 16px 12px;
+            background: var(--bg-warm);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .suggested-card:hover { transform: translateY(-2px); }
+        .suggested-card .avatar {
+            margin: 0 auto 8px;
+            width: 48px;
+            height: 48px;
+        }
+        .suggested-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .suggested-reason {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-bottom: 10px;
+        }
+        .suggested-btn {
+            padding: 6px 14px;
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            color: var(--coral);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ============================================
+           页面3：动态（朋友圈）
+        ============================================ */
+        .moments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+        }
+        .moments-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .moments-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 故事环区域 */
+        .stories-bar {
+            padding: 8px 0 16px;
+            border-bottom: 1px solid var(--divider);
+        }
+
+        /* 动态卡片 */
+        .moment-card {
+            padding: 16px;
+            background: var(--bg-card);
+            border-bottom: 8px solid var(--bg-body);
+        }
+
+        .moment-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .moment-author-info { flex: 1; }
+        .moment-author-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .moment-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .moment-content {
+            margin-bottom: 12px;
+        }
+        .moment-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .moment-text a {
+            color: var(--coral);
+            text-decoration: none;
+        }
+
+        .moment-images {
+            display: grid;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .moment-images.single {
+            grid-template-columns: 1fr;
+        }
+        .moment-images.single img {
+            max-width: 70%;
+            border-radius: var(--radius-md);
+        }
+        .moment-images.grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .moment-images.grid-3 .img-placeholder {
+            aspect-ratio: 1;
+            border-radius: var(--radius-sm);
+        }
+
+        .img-placeholder {
+            background: linear-gradient(135deg, var(--coral-light) 0%, var(--mint-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .moment-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--mint);
+            margin-bottom: 12px;
+        }
+
+        .moment-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--divider);
+        }
+
+        .moment-liked-by {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .moment-liked-by strong { color: var(--text-secondary); }
+
+        .moment-actions {
+            display: flex;
+            gap: 20px;
+        }
+        .moment-action {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color var(--transition);
+        }
+        .moment-action:hover { color: var(--coral); }
+        .moment-action.liked { color: var(--coral); }
+        .moment-action i { font-size: 16px; }
+
+        /* 转发样式 */
+        .moment-repost {
+            background: var(--bg-gray);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+        }
+        .repost-author {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .repost-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 发布按钮 */
+        .fab-post {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral) 0%, #FF9F87 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 126, 95, 0.4);
+            transition: all var(--transition);
+            z-index: 100;
+        }
+        .fab-post:hover { transform: scale(1.1) rotate(90deg); }
+
+        /* ============================================
+           页面4：发现
+        ============================================ */
+        .discover-header {
+            padding: 16px;
+        }
+        .discover-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* 你可能想认识的人 - 卡片滑动 */
+        .match-section {
+            padding: 0 16px 16px;
+        }
+        .match-card-container {
+            position: relative;
+            height: 200px;
+        }
+        .match-card {
+            position: absolute;
+            width: 100%;
+            height: 180px;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 16px;
+            transition: transform var(--transition);
+        }
+        .match-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--coral-light) 0%, var(--mint-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+        .match-info { flex: 1; }
+        .match-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .match-tags {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .match-tag {
+            padding: 3px 8px;
+            background: var(--bg-gray);
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .match-reason {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .match-mutual {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        .match-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+        .match-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+        }
+        .match-btn.pass {
+            background: var(--bg-gray);
+            color: var(--text-secondary);
+        }
+        .match-btn.like {
+            background: linear-gradient(135deg, var(--coral) 0%, #FF9F87 100%);
+            color: white;
+        }
+
+        /* 兴趣星球 */
+        .interest-section {
+            padding: 20px 16px;
+            background: var(--bg-card);
+            margin-bottom: 8px;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .section-more {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+        }
+
+        .planet-container {
+            position: relative;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .planet {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+        .planet:hover { transform: scale(1.1); }
+
+        .planet-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: var(--shadow-md);
+        }
+        .planet-icon.photography { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .planet-icon.camping { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .planet-icon.game { background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); }
+        .planet-icon.pet { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .planet-icon.travel { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+
+        .planet-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .planet:nth-child(1) { transform: translate(-80px, -40px); }
+        .planet:nth-child(2) { transform: translate(0, -60px); }
+        .planet:nth-child(3) { transform: translate(80px, -40px); }
+        .planet:nth-child(4) { transform: translate(-60px, 50px); }
+        .planet:nth-child(5) { transform: translate(60px, 50px); }
+
+        /* 热门话题 */
+        .trending-section {
+            padding: 16px;
+            background: var(--bg-card);
+        }
+        .trending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .trending-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-gray);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .trending-item:hover { transform: translateX(4px); }
+
+        .trending-rank {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+        }
+        .trending-rank.top {
+            background: linear-gradient(135deg, var(--coral) 0%, #FF9F87 100%);
+            color: white;
+        }
+
+        .trending-content { flex: 1; }
+        .trending-tag {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .trending-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .trending-heat {
+            font-size: 12px;
+            color: var(--coral);
+            font-weight: 500;
+        }
+
+        /* AI找搭子卡片 */
+        .ai-finder-card {
+            margin: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(255,126,95,0.1) 0%, rgba(78,205,196,0.1) 100%);
+            border: 1px solid rgba(255,126,95,0.2);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .ai-finder-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .ai-finder-info { flex: 1; }
+        .ai-finder-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-finder-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .ai-finder-arrow {
+            color: var(--text-tertiary);
+        }
+
+        /* ============================================
+           页面5：我的
+        ============================================ */
+        .profile-header-card {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, var(--coral-light) 0%, var(--mint-light) 100%);
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+            overflow: hidden;
+        }
+        .profile-header-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,100 Q100,50 200,100 T400,100' fill='none' stroke='white' stroke-opacity='0.2' stroke-width='2'/%3E%3C/svg%3E") center/cover;
+        }
+
+        .profile-top-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 12px 16px;
+            position: relative;
+            z-index: 1;
+        }
+        .profile-top-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .profile-info-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0 20px 20px;
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 24px;
+            margin-left: auto;
+            margin-bottom: 8px;
+        }
+        .profile-stat {
+            text-align: center;
+        }
+        .profile-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .profile-stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .profile-details {
+            padding: 60px 20px 20px;
+            background: var(--bg-card);
+            position: relative;
+        }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+        }
+        .profile-edit-btn {
+            padding: 4px 12px;
+            background: var(--bg-gray);
+            border: none;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .profile-id {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+
+        .profile-bio {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* 功能格栅 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 16px;
+            background: var(--bg-card);
+            margin-top: 8px;
+        }
+        .grid-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 8px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .grid-item:hover { background: var(--bg-gray); }
+        .grid-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .grid-icon.album { background: #E0E7FF; color: #6366F1; }
+        .grid-icon.fav { background: #FEF3C7; color: #F59E0B; }
+        .grid-icon.like { background: #FECACA; color: #EF4444; }
+        .grid-icon.card { background: #D1FAE5; color: #10B981; }
+        .grid-icon.bean { background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); color: #D97706; }
+        .grid-icon.theme { background: #E0E7FF; color: #8B5CF6; }
+        .grid-icon.moon { background: #1E293B; color: #FEF3C7; }
+        .grid-icon.settings { background: #F3F4F6; color: #6B7280; }
+
+        .grid-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 个性化装扮 */
+        .theme-preview-section {
+            padding: 16px;
+            background: var(--bg-card);
+            margin-top: 8px;
+        }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .preview-title {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .preview-more {
+            font-size: 13px;
+            color: var(--coral);
+            cursor: pointer;
+        }
+
+        .theme-samples {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .theme-sample {
+            flex-shrink: 0;
+            width: 80px;
+            height: 100px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+        .theme-sample:hover { transform: translateY(-4px); }
+        .theme-sample.active {
+            box-shadow: 0 0 0 2px var(--coral);
+        }
+        .theme-sample.coral { background: linear-gradient(135deg, #FFB4A2 0%, #FF7E5F 100%); }
+        .theme-sample.mint { background: linear-gradient(135deg, #A8E6CF 0%, #4ECDC4 100%); }
+        .theme-sample.ocean { background: linear-gradient(135deg, #89CFF0 0%, #1E90FF 100%); }
+        .theme-sample.sunset { background: linear-gradient(135deg, #FFD93D 0%, #FF6B6B 100%); }
+
+        .theme-name {
+            font-size: 11px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* ============================================
+           底部导航
+        ============================================ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 375px;
+            height: 80px;
+            background: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-light);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--coral);
+            transform: translateY(-2px);
+        }
+        .nav-item.active .nav-label {
+            color: var(--coral);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            color: var(--text-tertiary);
+            transition: all var(--transition);
+        }
+        .nav-label {
+            font-size: 10px;
+            color: var(--text-tertiary);
+        }
+
+        .nav-item.center {
+            margin-top: -20px;
+        }
+        .nav-btn-center {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--coral) 0%, #FF9F87 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 16px rgba(255, 126, 95, 0.4);
+        }
+        .nav-item.center .nav-label {
+            margin-top: 4px;
+            color: var(--coral);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="time">15:20</span>
+            <div class="icons">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-three-quarters"></i>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- ==================== 页面1：消息 ==================== -->
+            <div class="page active" id="page-messages">
+                <div class="top-nav">
+                    <div class="logo">口信</div>
+                    <div class="top-actions">
+                        <div class="top-action-btn"><i class="fas fa-camera"></i></div>
+                        <div class="top-action-btn"><i class="fas fa-search"></i></div>
+                    </div>
+                </div>
+
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="搜索好友、群聊或动态">
+                </div>
+
+                <!-- 状态故事条 -->
+                <div class="status-stories">
+                    <div class="stories-scroll">
+                        <div class="story-item add">
+                            <div class="story-ring">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="story-name">我的状态</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👨</div>
+                                </div>
+                            </div>
+                            <div class="story-name">顾西洲</div>
+                            <div class="story-preview">咖啡馆☕️</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👩</div>
+                                </div>
+                            </div>
+                            <div class="story-name">安然</div>
+                            <div class="story-preview">跑步5km</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👩‍💼</div>
+                                </div>
+                            </div>
+                            <div class="story-name">李昕蔓</div>
+                            <div class="story-preview">工作中...</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">🏃</div>
+                                </div>
+                            </div>
+                            <div class="story-name">张静</div>
+                            <div class="story-preview">健身打卡</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 对话列表 -->
+                <div class="chat-list">
+                    <!-- 置顶群聊 -->
+                    <div class="chat-item pinned" onclick="goToChat()">
+                        <div class="avatar" style="font-size: 18px;">🏠</div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">
+                                    汇公馆8号楼居民群
+                                    <span class="group-tag">置顶</span>
+                                </div>
+                                <div class="chat-time">14:30</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text"><strong>付大哥40：</strong>明天停水通知...</span>
+                                <span class="chat-badge">3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 闺蜜私聊 -->
+                    <div class="chat-item">
+                        <div class="avatar">
+                            👩
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">安然</div>
+                                <div class="chat-time">14:02</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text">哈哈哈哈那家店我真的笑死！下次一定带你去</span>
+                                <div class="chat-icons">
+                                    <i class="fas fa-volume-mute"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 工作群 -->
+                    <div class="chat-item">
+                        <div class="avatar" style="font-size: 18px;">🍔</div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">吃货小分队</div>
+                                <div class="chat-time">12:45</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text"><strong>李昕蔓：</strong>今晚火锅有人吗？我已经订位了</span>
+                                <span class="chat-badge">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 发小 -->
+                    <div class="chat-item">
+                        <div class="avatar">
+                            👨
+                            <div class="status-dot"></div>
+                        </div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">顾西洲</div>
+                                <div class="chat-time">11:20</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text">周末奥体晨跑约不约？配速6分</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 同事 -->
+                    <div class="chat-item">
+                        <div class="avatar">
+                            👩‍💼
+                            <div class="status-dot away"></div>
+                        </div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">李昕蔓</div>
+                                <div class="chat-time">昨天</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text">方案已经发邮箱了，有空看下～</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 健身搭子 -->
+                    <div class="chat-item">
+                        <div class="avatar">🏃</div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">张静</div>
+                                <div class="chat-time">昨天</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text">[图片] 今天的训练计划</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 家庭群 -->
+                    <div class="chat-item">
+                        <div class="avatar" style="font-size: 18px;">👨‍👩‍👧</div>
+                        <div class="chat-content">
+                            <div class="chat-header-row">
+                                <div class="chat-name">相亲相爱一家人</div>
+                                <div class="chat-time">周一</div>
+                            </div>
+                            <div class="chat-preview-row">
+                                <span class="chat-preview-text"><strong>妈妈：</strong>记得周末回家吃饭</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI助手折叠 -->
+                <div class="ai-section">
+                    <div class="ai-section-header">
+                        <div class="ai-label">
+                            <i class="fas fa-robot"></i>
+                            <span>口信助手</span>
+                            <span class="ai-tag">⚡AI</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="ai-count">2个待处理</span>
+                            <i class="fas fa-chevron-down" style="color: var(--text-tertiary); font-size: 12px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面2：联系人 ==================== -->
+            <div class="page" id="page-contacts">
+                <div class="top-nav">
+                    <div class="logo">联系人</div>
+                    <div class="top-actions">
+                        <div class="top-action-btn"><i class="fas fa-search"></i></div>
+                    </div>
+                </div>
+
+                <div class="contacts-add-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>添加朋友</span>
+                </div>
+
+                <!-- 星标好友 -->
+                <div class="contact-group">
+                    <div class="group-header">
+                        <div class="group-title">
+                            <i class="fas fa-star" style="color: #FBBF24;"></i>
+                            星标好友
+                        </div>
+                        <span class="group-count">2</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar">👩</div>
+                        <div class="contact-info">
+                            <div class="contact-name">安然</div>
+                            <div class="contact-status">3分钟前在线</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar">👨</div>
+                        <div class="contact-info">
+                            <div class="contact-name">顾西洲</div>
+                            <div class="contact-status">在线</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 常用联系人 -->
+                <div class="contact-group">
+                    <div class="group-header">
+                        <div class="group-title">
+                            <i class="fas fa-clock" style="color: var(--coral);"></i>
+                            常用联系人
+                        </div>
+                        <span class="group-count">3</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar">👩‍💼</div>
+                        <div class="contact-info">
+                            <div class="contact-name">李昕蔓</div>
+                            <div class="contact-status music">🎵 听歌中</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar">🏃</div>
+                        <div class="contact-info">
+                            <div class="contact-name">张静</div>
+                            <div class="contact-status sport">🏃 运动</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar" style="font-size: 18px;">🍔</div>
+                        <div class="contact-info">
+                            <div class="contact-name">吃货小分队</div>
+                            <div class="contact-status">李昕蔓: 今晚火锅有人吗</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 家人 -->
+                <div class="contact-group">
+                    <div class="group-header">
+                        <div class="group-title">
+                            <i class="fas fa-home" style="color: var(--mint);"></i>
+                            家人
+                        </div>
+                        <span class="group-count">4</span>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar" style="font-size: 18px;">🏠</div>
+                        <div class="contact-info">
+                            <div class="contact-name">汇公馆8号楼居民群</div>
+                            <div class="contact-status">付大哥40: 明天停水通知</div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="avatar" style="font-size: 18px;">👨‍👩‍👧</div>
+                        <div class="contact-info">
+                            <div class="contact-name">相亲相爱一家人</div>
+                            <div class="contact-status">妈妈: 记得周末回家吃饭</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 可能认识的人 -->
+                <div class="suggested-section">
+                    <div class="suggested-title">🤝 可能认识的人</div>
+                    <div class="suggested-list">
+                        <div class="suggested-card">
+                            <div class="avatar">👩‍🎨</div>
+                            <div class="suggested-name">小雨</div>
+                            <div class="suggested-reason">共同好友 安然</div>
+                            <button class="suggested-btn">添加</button>
+                        </div>
+                        <div class="suggested-card">
+                            <div class="avatar">👨‍💻</div>
+                            <div class="suggested-name">阿杰</div>
+                            <div class="suggested-reason">同在上海</div>
+                            <button class="suggested-btn">添加</button>
+                        </div>
+                        <div class="suggested-card">
+                            <div class="avatar">🧘</div>
+                            <div class="suggested-name">瑜伽Anna</div>
+                            <div class="suggested-reason">同好健身圈</div>
+                            <button class="suggested-btn">添加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面3：动态 ==================== -->
+            <div class="page" id="page-moments">
+                <div class="moments-header">
+                    <div class="moments-title">动态</div>
+                    <div class="moments-actions">
+                        <div class="top-action-btn"><i class="fas fa-bell"></i></div>
+                        <div class="top-action-btn"><i class="fas fa-comment-dots"></i></div>
+                    </div>
+                </div>
+
+                <!-- 故事环 -->
+                <div class="stories-bar">
+                    <div class="stories-scroll">
+                        <div class="story-item add">
+                            <div class="story-ring">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="story-name">我的故事</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👩</div>
+                                </div>
+                            </div>
+                            <div class="story-name">安然</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👨</div>
+                                </div>
+                            </div>
+                            <div class="story-name">顾西洲</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">👩‍💼</div>
+                                </div>
+                            </div>
+                            <div class="story-name">李昕蔓</div>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-avatar-wrap">
+                                <div class="story-ring">
+                                    <div class="avatar">🏃</div>
+                                </div>
+                            </div>
+                            <div class="story-name">张静</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态1：安然的咖啡店 -->
+                <div class="moment-card">
+                    <div class="moment-header">
+                        <div class="avatar avatar-small">👩</div>
+                        <div class="moment-author-info">
+                            <div class="moment-author-name">安然</div>
+                            <div class="moment-time">2小时前</div>
+                        </div>
+                    </div>
+                    <div class="moment-content">
+                        <div class="moment-text">
+                            终于喝到这家！☕️ 排队两小时也值得～环境超适合拍照，姐妹们快冲！<br>
+                            <a href="#">#周末探店</a> <a href="#">#咖啡控</a>
+                        </div>
+                        <div class="moment-images grid-3">
+                            <div class="img-placeholder">☕️</div>
+                            <div class="img-placeholder">🍰</div>
+                            <div class="img-placeholder">📸</div>
+                        </div>
+                        <div class="moment-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>上海·武康路</span>
+                        </div>
+                    </div>
+                    <div class="moment-footer">
+                        <div class="moment-liked-by">
+                            ❤️ <strong>顾西洲</strong> 和 <strong>李昕蔓</strong> 等12人赞过
+                        </div>
+                        <div class="moment-actions">
+                            <div class="moment-action liked">
+                                <i class="fas fa-heart"></i>
+                                <span>12</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-comment"></i>
+                                <span>3</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-share"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态2：顾西洲跑步 -->
+                <div class="moment-card">
+                    <div class="moment-header">
+                        <div class="avatar avatar-small">👨</div>
+                        <div class="moment-author-info">
+                            <div class="moment-author-name">顾西洲</div>
+                            <div class="moment-time">4小时前</div>
+                        </div>
+                    </div>
+                    <div class="moment-content">
+                        <div class="moment-text">
+                            10km打卡，配速5'45" 🏃‍♂️ 周末奥体约跑的有没有？
+                        </div>
+                        <div class="moment-images single">
+                            <div class="img-placeholder" style="padding: 40px; font-size: 48px;">
+                                🏃‍♂️📱 10.0km
+                            </div>
+                        </div>
+                        <div class="moment-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>南京·奥体中心</span>
+                        </div>
+                    </div>
+                    <div class="moment-footer">
+                        <div class="moment-liked-by">
+                            ❤️ <strong>张静</strong> 和 <strong>你</strong> 等8人赞过
+                        </div>
+                        <div class="moment-actions">
+                            <div class="moment-action liked">
+                                <i class="fas fa-heart"></i>
+                                <span>8</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-comment"></i>
+                                <span>5</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-share"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 动态3：李昕蔓转发 -->
+                <div class="moment-card">
+                    <div class="moment-header">
+                        <div class="avatar avatar-small">👩‍💼</div>
+                        <div class="moment-author-info">
+                            <div class="moment-author-name">李昕蔓</div>
+                            <div class="moment-time">昨天</div>
+                        </div>
+                    </div>
+                    <div class="moment-content">
+                        <div class="moment-text">
+                            这个观点很有意思，值得思考 🤔
+                        </div>
+                        <div class="moment-repost">
+                            <div class="repost-author">@科技前沿</div>
+                            <div class="repost-text">AI时代，人类的核心竞争力不在于计算能力，而在于创造力、同理心和审美...</div>
+                        </div>
+                    </div>
+                    <div class="moment-footer">
+                        <div class="moment-liked-by">
+                            ❤️ <strong>你</strong> 和 <strong>3人</strong> 赞过
+                        </div>
+                        <div class="moment-actions">
+                            <div class="moment-action">
+                                <i class="far fa-heart"></i>
+                                <span>4</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-comment"></i>
+                                <span>2</span>
+                            </div>
+                            <div class="moment-action">
+                                <i class="fas fa-share"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 发布按钮 -->
+                <div class="fab-post" onclick="alert('发布动态功能')">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+
+            <!-- ==================== 页面4：发现 ==================== -->
+            <div class="page" id="page-discover">
+                <div class="discover-header">
+                    <h2>发现</h2>
+                </div>
+
+                <!-- 你可能想认识的人 -->
+                <div class="match-section">
+                    <div class="section-title">
+                        <span>👋 你可能想认识的人</span>
+                        <span class="section-more">查看更多</span>
+                    </div>
+                    <div class="match-card-container">
+                        <div class="match-card">
+                            <div class="match-avatar">👩‍🎨</div>
+                            <div class="match-info">
+                                <div class="match-name">小夏</div>
+                                <div class="match-tags">
+                                    <span class="match-tag">设计</span>
+                                    <span class="match-tag">上海</span>
+                                    <span class="match-tag">摄影</span>
+                                </div>
+                                <div class="match-reason">你们都喜欢街头摄影 📸</div>
+                                <div class="match-mutual">共同好友：安然、李昕蔓</div>
+                                <div class="match-actions">
+                                    <button class="match-btn pass">忽略</button>
+                                    <button class="match-btn like">👋 打招呼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 兴趣星球 -->
+                <div class="interest-section">
+                    <div class="section-title">
+                        <span>🪐 兴趣星球</span>
+                        <span class="section-more">全部15个</span>
+                    </div>
+                    <div class="planet-container">
+                        <div class="planet">
+                            <div class="planet-icon photography">📸</div>
+                            <div class="planet-name">摄影</div>
+                        </div>
+                        <div class="planet">
+                            <div class="planet-icon camping">⛺</div>
+                            <div class="planet-name">露营</div>
+                        </div>
+                        <div class="planet">
+                            <div class="planet-icon game">🎭</div>
+                            <div class="planet-name">剧本杀</div>
+                        </div>
+                        <div class="planet">
+                            <div class="planet-icon pet">🐱</div>
+                            <div class="planet-name">萌宠</div>
+                        </div>
+                        <div class="planet">
+                            <div class="planet-icon travel">✈️</div>
+                            <div class="planet-name">旅行</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热门话题 -->
+                <div class="trending-section">
+                    <div class="section-title">
+                        <span>🔥 热门话题</span>
+                        <span class="section-more">更多</span>
+                    </div>
+                    <div class="trending-list">
+                        <div class="trending-item">
+                            <div class="trending-rank top">1</div>
+                            <div class="trending-content">
+                                <div class="trending-tag">#口信发布会</div>
+                                <div class="trending-count">2.4万人参与</div>
+                            </div>
+                            <div class="trending-heat">🔥 热</div>
+                        </div>
+                        <div class="trending-item">
+                            <div class="trending-rank top">2</div>
+                            <div class="trending-content">
+                                <div class="trending-tag">#春日露营计划</div>
+                                <div class="trending-count">1.8万人参与</div>
+                            </div>
+                        </div>
+                        <div class="trending-item">
+                            <div class="trending-rank">3</div>
+                            <div class="trending-content">
+                                <div class="trending-tag">#周末探店</div>
+                                <div class="trending-count">1.2万人参与</div>
+                            </div>
+                        </div>
+                        <div class="trending-item">
+                            <div class="trending-rank">4</div>
+                            <div class="trending-content">
+                                <div class="trending-tag">#早起打卡挑战</div>
+                                <div class="trending-count">9865人参与</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI找搭子 -->
+                <div class="ai-finder-card">
+                    <div class="ai-finder-icon">⚡</div>
+                    <div class="ai-finder-info">
+                        <div class="ai-finder-title">
+                            AI助手帮你找搭子
+                            <span class="ai-tag">AI</span>
+                        </div>
+                        <div class="ai-finder-desc">根据你的兴趣和位置，智能推荐志同道合的朋友</div>
+                    </div>
+                    <i class="fas fa-chevron-right ai-finder-arrow"></i>
+                </div>
+            </div>
+
+            <!-- ==================== 页面5：我的 ==================== -->
+            <div class="page" id="page-profile">
+                <div class="profile-header-card">
+                    <div class="profile-top-actions">
+                        <div class="profile-top-btn"><i class="fas fa-camera"></i></div>
+                        <div class="profile-top-btn"><i class="fas fa-qrcode"></i></div>
+                        <div class="profile-top-btn"><i class="fas fa-cog"></i></div>
+                    </div>
+
+                    <div class="profile-info-area">
+                        <div class="avatar avatar-xl">👤</div>
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">28</div>
+                                <div class="profile-stat-label">动态</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">156</div>
+                                <div class="profile-stat-label">粉丝</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">203</div>
+                                <div class="profile-stat-label">关注</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <div class="profile-name-row">
+                        <div class="profile-name">元峰</div>
+                        <button class="profile-edit-btn">编辑资料</button>
+                    </div>
+                    <div class="profile-id">口信号: kouxin_2024</div>
+                    <div class="profile-bio">📍上海 | 🏃跑步爱好者 | ☕咖啡上瘾者<br>认真生活，偶尔思考。</div>
+                </div>
+
+                <!-- 功能格栅 -->
+                <div class="feature-grid">
+                    <div class="grid-item">
+                        <div class="grid-icon album"><i class="fas fa-images"></i></div>
+                        <div class="grid-label">相册</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon fav"><i class="fas fa-star"></i></div>
+                        <div class="grid-label">收藏</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon like"><i class="fas fa-heart"></i></div>
+                        <div class="grid-label">赞过</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon card"><i class="fas fa-id-card"></i></div>
+                        <div class="grid-label">卡包</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon bean"><i class="fas fa-coins"></i></div>
+                        <div class="grid-label">口信豆</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon theme"><i class="fas fa-palette"></i></div>
+                        <div class="grid-label">装扮</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon moon"><i class="fas fa-moon"></i></div>
+                        <div class="grid-label">夜间</div>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon settings"><i class="fas fa-cog"></i></div>
+                        <div class="grid-label">设置</div>
+                    </div>
+                </div>
+
+                <!-- 个性化装扮 -->
+                <div class="theme-preview-section">
+                    <div class="preview-header">
+                        <div class="preview-title">🎨 个性装扮</div>
+                        <div class="preview-more">更多主题</div>
+                    </div>
+                    <div class="theme-samples">
+                        <div class="theme-sample coral active">
+                            <div class="theme-name">珊瑚</div>
+                        </div>
+                        <div class="theme-sample mint">
+                            <div class="theme-name">薄荷</div>
+                        </div>
+                        <div class="theme-sample ocean">
+                            <div class="theme-name">海洋</div>
+                        </div>
+                        <div class="theme-sample sunset">
+                            <div class="theme-name">日落</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 底部导航 ==================== -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('messages', this)">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-label">消息</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('contacts', this)">
+                <i class="fas fa-address-book nav-icon"></i>
+                <span class="nav-label">联系人</span>
+            </div>
+            <div class="nav-item center" onclick="switchTab('moments', this)">
+                <div class="nav-btn-center">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="nav-label">动态</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('discover', this)">
+                <i class="fas fa-compass nav-icon"></i>
+                <span class="nav-label">发现</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile', this)">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 口信·熟人社交交互逻辑
+        // ============================================
+
+        /**
+         * 切换底部导航标签
+         */
+        function switchTab(pageId, navItem) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 显示目标页面
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // 更新导航状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            navItem.classList.add('active');
+        }
+
+        /**
+         * 模拟进入聊天页
+         */
+        function goToChat() {
+            alert('进入聊天详情页');
+        }
+
+        // 点赞按钮交互
+        document.querySelectorAll('.moment-action').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.querySelector('.fa-heart')) {
+                    this.classList.toggle('liked');
+                    const icon = this.querySelector('i');
+                    if (this.classList.contains('liked')) {
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                    } else {
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                    }
+                }
+            });
+        });
+
+        // 添加朋友按钮
+        document.querySelector('.contacts-add-btn')?.addEventListener('click', function() {
+            alert('添加朋友功能');
+        });
+
+        // 可能认识的人卡片
+        document.querySelectorAll('.suggested-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.textContent = '已发送';
+                this.disabled = true;
+                this.style.opacity = '0.6';
+            });
+        });
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.querySelector('.status-bar .time').textContent = hours + ':' + minutes;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // 所有按钮点击反馈
+        document.querySelectorAll('button, .chat-item, .contact-item, .nav-item, .story-item, .grid-item').forEach(el => {
+            el.addEventListener('click', function() {
+                this.style.transform = 'scale(0.97)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>
