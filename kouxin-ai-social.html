@@ -1,0 +1,2583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口信 - AI虚拟人社交</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================
+           口信·未来AI虚拟人社交产品界面原型
+           设计基调：未来主义 × 亲和玻璃态
+        ============================================ */
+
+        /* CSS变量定义 - 设计系统 */
+        :root {
+            /* 品牌色 */
+            --brand-blue: #2A6DF4;
+            --brand-purple: #8A74F9;
+            --brand-gradient: linear-gradient(135deg, #2A6DF4 0%, #8A74F9 100%);
+
+            /* 背景色 */
+            --bg-primary: #F5F7FA;
+            --bg-surface: rgba(255, 255, 255, 0.95);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-card: #FFFFFF;
+
+            /* 文字色 */
+            --text-primary: #1A1A2E;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+
+            /* 功能色 */
+            --power-color: #F59E0B;
+            --success: #10B981;
+            --online: #34D399;
+
+            /* 阴影 */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-glass: 0 8px 32px rgba(42, 109, 244, 0.15);
+
+            /* 圆角 */
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+
+            /* 动画 */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+        }
+
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #E8ECF3 0%, #F5F7FA 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px 0;
+            color: var(--text-primary);
+        }
+
+        /* 手机框架容器 */
+        .phone-frame {
+            width: 375px;
+            min-height: 812px;
+            background: var(--bg-primary);
+            border-radius: 40px;
+            box-shadow:
+                0 0 0 12px #2A2A2A,
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 手机顶部刘海 */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #2A2A2A;
+            border-radius: 0 0 24px 24px;
+            z-index: 1000;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-bar .time {
+            letter-spacing: 0.5px;
+        }
+
+        .status-bar .icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .status-bar .icons i {
+            font-size: 14px;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            height: calc(100% - 90px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+            scrollbar-width: none;
+        }
+
+        .main-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 页面切换隐藏 */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           组件：算力胶囊
+        ============================================ */
+        .power-capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.2) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--power-color);
+            backdrop-filter: blur(10px);
+            transition: transform var(--transition-fast);
+        }
+
+        .power-capsule:hover {
+            transform: scale(1.05);
+        }
+
+        .power-capsule i {
+            font-size: 12px;
+        }
+
+        /* ============================================
+           组件：AI徽章
+        ============================================ */
+        .ai-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: var(--brand-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            font-size: 8px;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* ============================================
+           组件：头像
+        ============================================ */
+        .avatar {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar.is-ai {
+            box-shadow: 0 0 0 2px rgba(138, 116, 249, 0.3);
+        }
+
+        .avatar.is-ai::after {
+            content: 'AI';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: var(--brand-gradient);
+            border-radius: 50%;
+            font-size: 7px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .avatar-large {
+            width: 64px;
+            height: 64px;
+        }
+
+        .avatar-small {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* ============================================
+           页面1：消息列表首页
+        ============================================ */
+
+        /* 顶部导航 */
+        .home-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo i {
+            font-size: 24px;
+            -webkit-text-fill-color: initial;
+            color: var(--brand-blue);
+        }
+
+        /* 搜索框 */
+        .search-box {
+            margin: 0 20px 20px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            border: none;
+            border-radius: 20px;
+            background: var(--bg-card);
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition-fast);
+        }
+
+        .search-box input:focus {
+            box-shadow: var(--shadow-md);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* AI虚拟人推荐区 */
+        .ai-recommend {
+            margin: 0 20px 24px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .section-title i {
+            color: var(--brand-purple);
+            font-size: 14px;
+        }
+
+        .ai-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 4px 4px 12px;
+            scrollbar-width: none;
+        }
+
+        .ai-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ai-card {
+            flex-shrink: 0;
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .ai-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .ai-card-avatar {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            position: relative;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .ai-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ai-card-avatar::after {
+            content: 'AI';
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: var(--brand-gradient);
+            border-radius: 50%;
+            font-size: 8px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .ai-card-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .ai-card-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 对话列表 */
+        .chat-list {
+            padding: 0 20px;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+            transition: opacity var(--transition-fast);
+        }
+
+        .chat-item:hover {
+            opacity: 0.8;
+        }
+
+        .chat-item:last-child {
+            border-bottom: none;
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .chat-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-name .ai-tag {
+            font-size: 10px;
+            padding: 2px 6px;
+            background: linear-gradient(135deg, rgba(42, 109, 244, 0.1) 0%, rgba(138, 116, 249, 0.1) 100%);
+            color: var(--brand-purple);
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .chat-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-preview-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .power-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 11px;
+            color: var(--power-color);
+            font-weight: 500;
+        }
+
+        .power-cost {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .chat-thumbnail {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* ============================================
+           页面2：虚拟人聊天详情页
+        ============================================ */
+        .chat-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .back-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            background: var(--brand-gradient);
+            color: white;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .chat-header-status {
+            font-size: 12px;
+            color: var(--online);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .chat-header-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--online);
+            border-radius: 50%;
+        }
+
+        .more-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* 消息流区域 */
+        .messages-container {
+            padding: 16px;
+            min-height: 500px;
+        }
+
+        .message-group {
+            margin-bottom: 24px;
+        }
+
+        .message-time {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
+        }
+
+        /* 消息气泡 */
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.ai .message-content {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            color: var(--text-primary);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* AI生成图片卡片 */
+        .generated-images {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .generated-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #E0E7FF 0%, #EDE9FE 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        /* 操作按钮组 */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
+            background: rgba(42, 109, 244, 0.08);
+            border: none;
+            border-radius: 16px;
+            font-size: 12px;
+            color: var(--brand-blue);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .action-btn:hover {
+            background: rgba(42, 109, 244, 0.15);
+        }
+
+        .power-hint {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .power-hint i {
+            color: var(--power-color);
+            font-size: 10px;
+        }
+
+        /* 输入区 */
+        .input-area {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 335px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 28px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .skill-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(42, 109, 244, 0.1) 0%, rgba(138, 116, 249, 0.1) 100%);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-blue);
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .skill-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .input-field {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--brand-gradient);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* ============================================
+           页面3：联系人页
+        ============================================ */
+        .contacts-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contacts-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 分组标题 */
+        .contact-group {
+            margin-bottom: 20px;
+        }
+
+        .group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .group-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .group-title i {
+            color: var(--brand-purple);
+        }
+
+        .group-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .group-arrow {
+            color: var(--text-tertiary);
+            font-size: 12px;
+        }
+
+        /* 联系人项 */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .contact-item:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .contact-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .power-bar {
+            width: 40px;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .power-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #F59E0B, #FBBF24);
+            border-radius: 2px;
+        }
+
+        /* 创建AI分身入口 */
+        .create-ai-card {
+            margin: 16px 20px;
+            padding: 20px;
+            background: var(--brand-gradient);
+            border-radius: var(--radius-lg);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .create-ai-card:hover {
+            transform: scale(1.02);
+        }
+
+        .create-ai-text h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .create-ai-text p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .create-ai-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        /* 可能认识的虚拟人 */
+        .suggested-ais {
+            padding: 0 20px;
+            margin-top: 20px;
+        }
+
+        .suggested-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .suggested-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .suggested-item {
+            flex-shrink: 0;
+            width: 140px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .suggested-avatar {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E0E7FF 0%, #EDE9FE 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .suggested-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .suggested-role {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .add-btn {
+            padding: 6px 16px;
+            background: rgba(42, 109, 244, 0.1);
+            border: none;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--brand-blue);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ============================================
+           页面4：探索页（虚拟人市场）
+        ============================================ */
+        .explore-header {
+            padding: 16px 20px 8px;
+        }
+
+        .explore-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        /* 分类标签 */
+        .category-tags {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .category-tag {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: none;
+        }
+
+        .category-tag.active {
+            background: var(--brand-gradient);
+            color: white;
+        }
+
+        /* 排行榜 */
+        .ranking-section {
+            padding: 20px;
+        }
+
+        .ranking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .ranking-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .view-all {
+            font-size: 13px;
+            color: var(--brand-blue);
+            cursor: pointer;
+        }
+
+        /* 虚拟人卡片网格 */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .ai-market-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: transform var(--transition-fast);
+        }
+
+        .ai-market-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ai-market-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .ai-market-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E0E7FF 0%, #EDE9FE 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+        }
+
+        .ai-market-avatar::after {
+            content: 'AI';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: var(--brand-gradient);
+            border-radius: 50%;
+            font-size: 7px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .ai-market-info {
+            flex: 1;
+        }
+
+        .ai-market-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .ai-market-rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--power-color);
+        }
+
+        .ai-market-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .ai-market-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-market-stats {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .ai-market-price {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--power-color);
+        }
+
+        /* ============================================
+           页面5：我的页
+        ============================================ */
+        .profile-header {
+            padding: 20px;
+            background: var(--brand-gradient);
+            color: white;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        }
+
+        .profile-user {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .profile-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .profile-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 算力余额卡片 */
+        .power-balance-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .power-balance-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .power-balance-value {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .claim-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .claim-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        /* VIP卡片 */
+        .vip-card {
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%);
+            border-radius: var(--radius-lg);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(138, 116, 249, 0.3) 0%, transparent 70%);
+        }
+
+        .vip-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .vip-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .vip-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .vip-desc {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .vip-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            border: none;
+            border-radius: 20px;
+            color: #1A1A2E;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 我的虚拟人列表 */
+        .my-ais-section {
+            padding: 0 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .manage-btn {
+            font-size: 13px;
+            color: var(--brand-blue);
+            cursor: pointer;
+        }
+
+        .my-ai-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .my-ai-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .my-ai-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E0E7FF 0%, #EDE9FE 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+        }
+
+        .my-ai-avatar::after {
+            content: 'AI';
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: var(--brand-gradient);
+            border-radius: 50%;
+            font-size: 7px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .my-ai-info {
+            flex: 1;
+        }
+
+        .my-ai-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .my-ai-type {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .my-ai-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .my-ai-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        /* 设置列表 */
+        .settings-list {
+            padding: 20px;
+            margin-top: 8px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(42, 109, 244, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-blue);
+            font-size: 16px;
+        }
+
+        .setting-text {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .setting-arrow {
+            color: var(--text-tertiary);
+        }
+
+        /* ============================================
+           页面6：算力中心
+        ============================================ */
+        .power-center-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .power-center-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .power-big-display {
+            font-size: 56px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .power-big-display i {
+            font-size: 40px;
+        }
+
+        .power-center-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        /* 算力任务 */
+        .power-tasks {
+            padding: 20px;
+        }
+
+        .power-tasks h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .task-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .task-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--power-color);
+            font-size: 20px;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .task-reward {
+            font-size: 13px;
+            color: var(--power-color);
+        }
+
+        .task-btn {
+            padding: 8px 16px;
+            background: var(--brand-gradient);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .task-btn.completed {
+            background: #E5E7EB;
+            color: var(--text-secondary);
+        }
+
+        /* 算力充值 */
+        .power-recharge {
+            padding: 0 20px;
+        }
+
+        .power-recharge h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .recharge-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .recharge-option {
+            padding: 16px 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+        }
+
+        .recharge-option:hover {
+            border-color: var(--power-color);
+        }
+
+        .recharge-option.popular {
+            border-color: var(--power-color);
+            position: relative;
+        }
+
+        .recharge-option.popular::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 2px 10px;
+            background: var(--power-color);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            border-radius: 10px;
+        }
+
+        .recharge-power {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--power-color);
+            margin-bottom: 4px;
+        }
+
+        .recharge-price {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           底部导航栏
+        ============================================ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 375px;
+            height: 90px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            padding: 4px 12px;
+        }
+
+        .nav-item:hover {
+            opacity: 0.7;
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--brand-blue);
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--brand-blue);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+        }
+
+        /* 算力中心特殊按钮 */
+        .nav-item.power-center {
+            margin-top: -20px;
+        }
+
+        .power-center-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: transform var(--transition-fast);
+        }
+
+        .power-center-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .power-center-btn i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .nav-item.power-center .nav-label {
+            margin-top: 6px;
+            color: var(--power-color);
+            font-weight: 600;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 400px) {
+            body {
+                padding: 0;
+            }
+            .phone-frame {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .notch {
+                display: none;
+            }
+            .bottom-nav {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 手机屏幕框架 -->
+    <div class="phone-frame">
+        <!-- 顶部刘海 -->
+        <div class="notch"></div>
+
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <span class="time">14:30</span>
+            <div class="icons">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-three-quarters"></i>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- ==================== 页面1：消息列表 ==================== -->
+            <div class="page active" id="page-messages">
+                <!-- 顶部导航 -->
+                <div class="home-header">
+                    <div class="logo">
+                        <i class="fas fa-comment-dots"></i>
+                        口信
+                    </div>
+                    <div class="power-capsule">
+                        <i class="fas fa-bolt"></i>
+                        <span>2450</span>
+                    </div>
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="搜索好友、虚拟人或消息">
+                </div>
+
+                <!-- AI虚拟人推荐 -->
+                <div class="ai-recommend">
+                    <div class="section-title">
+                        <i class="fas fa-robot"></i>
+                        AI虚拟人今日推荐
+                    </div>
+                    <div class="ai-scroll">
+                        <div class="ai-card" onclick="goToChat()">
+                            <div class="ai-card-avatar">
+                                <span style="font-size: 36px;">🎨</span>
+                            </div>
+                            <div class="ai-card-name">小马送福</div>
+                            <div class="ai-card-desc">节日海报设计</div>
+                        </div>
+                        <div class="ai-card">
+                            <div class="ai-card-avatar">
+                                <span style="font-size: 36px;">📝</span>
+                            </div>
+                            <div class="ai-card-name">NOVA</div>
+                            <div class="ai-card-desc">创意文案优化</div>
+                        </div>
+                        <div class="ai-card">
+                            <div class="ai-card-avatar">
+                                <span style="font-size: 36px;">🎭</span>
+                            </div>
+                            <div class="ai-card-name">历史人物</div>
+                            <div class="ai-card-desc">与古代帝王对话</div>
+                        </div>
+                        <div class="ai-card">
+                            <div class="ai-card-avatar">
+                                <span style="font-size: 36px;">🖐️</span>
+                            </div>
+                            <div class="ai-card-name">手偶生成</div>
+                            <div class="ai-card-desc">3D掌心人偶</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 对话列表 -->
+                <div class="chat-list">
+                    <!-- AI虚拟人对话1 -->
+                    <div class="chat-item" onclick="goToChat()">
+                        <div class="avatar is-ai">
+                            <span style="font-size: 28px;">🎨</span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <div class="chat-name">
+                                    小马送福
+                                    <span class="ai-tag">AI</span>
+                                </div>
+                                <div class="chat-time">10:30</div>
+                            </div>
+                            <div class="chat-preview">
+                                <span class="chat-preview-text">已为你生成3张春节海报</span>
+                                <span class="power-tag"><i class="fas fa-bolt"></i>生成</span>
+                                <img class="chat-thumbnail" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect fill='%23FECACA' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-size='16'%3E🧧%3C/text%3E%3C/svg%3E" alt="preview">
+                            </div>
+                        </div>
+                        <div class="power-cost">⚡8</div>
+                    </div>
+
+                    <!-- 真人对话 -->
+                    <div class="chat-item">
+                        <div class="avatar">
+                            <span style="font-size: 24px;">👨</span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <div class="chat-name">顾西洲</div>
+                                <div class="chat-time">09:45</div>
+                            </div>
+                            <div class="chat-preview">
+                                <span class="chat-preview-text">周末聚餐去那家新开的餐厅？</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI虚拟人对话2 -->
+                    <div class="chat-item">
+                        <div class="avatar is-ai">
+                            <span style="font-size: 28px;">💡</span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <div class="chat-name">
+                                    创意总监·NOVA
+                                    <span class="ai-tag">AI</span>
+                                </div>
+                                <div class="chat-time">昨天</div>
+                            </div>
+                            <div class="chat-preview">
+                                <span class="chat-preview-text">这段文案有三个优化方向，你要听听吗？</span>
+                                <span class="action-btn" style="margin-left: 4px;">试用</span>
+                            </div>
+                        </div>
+                        <div class="power-cost">⚡3</div>
+                    </div>
+
+                    <!-- 更多对话 -->
+                    <div class="chat-item">
+                        <div class="avatar">
+                            <span style="font-size: 24px;">👩</span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <div class="chat-name">林小雨</div>
+                                <div class="chat-time">昨天</div>
+                            </div>
+                            <div class="chat-preview">
+                                <span class="chat-preview-text">哈哈，你说的太对了！😂</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-item">
+                        <div class="avatar is-ai">
+                            <span style="font-size: 28px;">🎮</span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-header-row">
+                                <div class="chat-name">
+                                    不放手
+                                    <span class="ai-tag">AI</span>
+                                </div>
+                                <div class="chat-time">前天</div>
+                            </div>
+                            <div class="chat-preview">
+                                <span class="chat-preview-text">这局我带你飞！准备团战~</span>
+                                <span class="power-tag"><i class="fas fa-bolt"></i>陪玩中</span>
+                            </div>
+                        </div>
+                        <div class="power-cost">⚡12/时</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面2：聊天详情 ==================== -->
+            <div class="page" id="page-chat">
+                <!-- 聊天头部 -->
+                <div class="chat-header">
+                    <div class="back-btn" onclick="goBack()">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name">
+                            小马送福
+                            <span class="chat-header-tag">⚡ 专业图像生成</span>
+                        </div>
+                        <div class="chat-header-status">在线</div>
+                    </div>
+                    <div class="more-btn">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </div>
+                </div>
+
+                <!-- 消息流 -->
+                <div class="messages-container">
+                    <div class="message-time">今天 10:24</div>
+
+                    <!-- 用户消息 -->
+                    <div class="message user">
+                        <div class="message-content">
+                            帮我生成几张春节主题的海报，要有龙年元素
+                        </div>
+                    </div>
+
+                    <!-- AI回复 -->
+                    <div class="message ai">
+                        <div class="avatar avatar-small is-ai">
+                            <span style="font-size: 20px;">🎨</span>
+                        </div>
+                        <div>
+                            <div class="message-content">
+                                好的！我正在为您生成春节海报，融入龙年吉祥元素 🐉
+                                <div class="generated-images">
+                                    <div class="generated-image">🧧</div>
+                                    <div class="generated-image">🐲</div>
+                                    <div class="generated-image">🎊</div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="action-btn"><i class="fas fa-redo"></i> 重新生成</button>
+                                    <button class="action-btn"><i class="fas fa-palette"></i> 调整风格</button>
+                                    <button class="action-btn"><i class="fas fa-download"></i> 保存到相册</button>
+                                </div>
+                            </div>
+                            <div class="power-hint">
+                                <i class="fas fa-bolt"></i>
+                                本次消耗 ⚡8
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message-time">今天 10:30</div>
+
+                    <!-- 用户消息 -->
+                    <div class="message user">
+                        <div class="message-content">
+                            第三张的风格很喜欢，能再生成几张类似的吗？
+                        </div>
+                    </div>
+
+                    <!-- AI回复 -->
+                    <div class="message ai">
+                        <div class="avatar avatar-small is-ai">
+                            <span style="font-size: 20px;">🎨</span>
+                        </div>
+                        <div>
+                            <div class="message-content">
+                                已为您生成3张相似风格的春节海报，添加了更多传统元素：
+                                <div class="generated-images">
+                                    <div class="generated-image">🏮</div>
+                                    <div class="generated-image">🧨</div>
+                                    <div class="generated-image">✨</div>
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="action-btn"><i class="fas fa-magic"></i> 添加文字</button>
+                                    <button class="action-btn"><i class="fas fa-share"></i> 分享</button>
+                                </div>
+                            </div>
+                            <div class="power-hint">
+                                <i class="fas fa-bolt"></i>
+                                本次消耗 ⚡8
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输入区 -->
+                <div class="input-area">
+                    <button class="skill-btn">
+                        <i class="fas fa-bolt"></i>
+                    </button>
+                    <input type="text" class="input-field" placeholder="向小马送福提问...">
+                    <button class="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== 页面3：联系人 ==================== -->
+            <div class="page" id="page-contacts">
+                <div class="contacts-header">
+                    <h2>联系人</h2>
+                    <div class="header-actions">
+                        <div class="header-btn"><i class="fas fa-search"></i></div>
+                        <div class="header-btn"><i class="fas fa-plus"></i></div>
+                    </div>
+                </div>
+
+                <!-- 我的虚拟人 -->
+                <div class="contact-group">
+                    <div class="group-header">
+                        <div class="group-title">
+                            <i class="fas fa-robot"></i>
+                            我的虚拟人
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="group-count">2</span>
+                            <i class="fas fa-chevron-down group-arrow"></i>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="avatar is-ai">
+                            <span style="font-size: 24px;">👩‍💼</span>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                安然-Vivian
+                                <span class="ai-tag">助理</span>
+                            </div>
+                            <div class="contact-status">
+                                空闲中
+                                <div class="power-bar">
+                                    <div class="power-bar-fill" style="width: 25%;"></div>
+                                </div>
+                                <span style="font-size: 11px; color: var(--power-color);">⚡25%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="avatar is-ai">
+                            <span style="font-size: 24px;">🌸</span>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">
+                                冬妮
+                                <span class="ai-tag">陪伴</span>
+                            </div>
+                            <div class="contact-status">
+                                专注中
+                                <div class="power-bar">
+                                    <div class="power-bar-fill" style="width: 60%;"></div>
+                                </div>
+                                <span style="font-size: 11px; color: var(--power-color);">⚡60%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 创建AI分身入口 -->
+                <div class="create-ai-card">
+                    <div class="create-ai-text">
+                        <h3>创建你的AI分身</h3>
+                        <p>让虚拟人帮你处理日常事务</p>
+                    </div>
+                    <div class="create-ai-icon">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                </div>
+
+                <!-- 真实好友 -->
+                <div class="contact-group">
+                    <div class="group-header">
+                        <div class="group-title">
+                            <i class="fas fa-users"></i>
+                            真实好友
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="group-count">A</span>
+                            <i class="fas fa-chevron-down group-arrow"></i>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="avatar">
+                            <span style="font-size: 24px;">👨</span>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">顾西洲</div>
+                            <div class="contact-status">上次在线 2小时前</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="avatar">
+                            <span style="font-size: 24px;">👩</span>
+                        </div>
+                        <div class="contact-info">
+                            <div class="contact-name">安然</div>
+                            <div class="contact-status">在线</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 可能认识的虚拟人 -->
+                <div class="suggested-ais">
+                    <div class="suggested-title">🔍 可能认识的虚拟人</div>
+                    <div class="suggested-scroll">
+                        <div class="suggested-item">
+                            <div class="suggested-avatar">🎮</div>
+                            <div class="suggested-name">不放手</div>
+                            <div class="suggested-role">游戏陪玩</div>
+                            <button class="add-btn">添加</button>
+                        </div>
+                        <div class="suggested-item">
+                            <div class="suggested-avatar">📚</div>
+                            <div class="suggested-name">学霸君</div>
+                            <div class="suggested-role">学习辅导</div>
+                            <button class="add-btn">添加</button>
+                        </div>
+                        <div class="suggested-item">
+                            <div class="suggested-avatar">🎵</div>
+                            <div class="suggested-name">音乐精灵</div>
+                            <div class="suggested-role">音乐推荐</div>
+                            <button class="add-btn">添加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面4：探索 ==================== -->
+            <div class="page" id="page-explore">
+                <div class="explore-header">
+                    <h2>探索虚拟人</h2>
+                    <div class="search-box" style="margin: 0;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索虚拟人、技能或场景">
+                    </div>
+                </div>
+
+                <!-- 分类标签 -->
+                <div class="category-tags" style="padding: 0 20px;">
+                    <button class="category-tag active">全部</button>
+                    <button class="category-tag">创意</button>
+                    <button class="category-tag">学习</button>
+                    <button class="category-tag">娱乐</button>
+                    <button class="category-tag">生活</button>
+                    <button class="category-tag">职场</button>
+                </div>
+
+                <!-- 排行榜 -->
+                <div class="ranking-section">
+                    <div class="ranking-header">
+                        <span class="ranking-title">🔥 热门虚拟人</span>
+                        <span class="view-all">查看全部</span>
+                    </div>
+
+                    <div class="ai-grid">
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">👑</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">古代帝王对话</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.9</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">与秦始皇、唐太宗等历史名君对话，了解历史故事</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 12.5万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    0.8/次
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">🖐️</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">3D手掌人偶</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.8</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">生成可爱的3D手掌小人，可定制造型和表情</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 8.3万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    1.2/次
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">📸</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">合影Labubu</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.7</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">与超人气潮玩Labubu合影，多种场景任选</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 6.8万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    1.5/次
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">🎓</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">雅思口语教练</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.9</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">1对1雅思口语陪练，智能纠错，模拟真实考场</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 5.2万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    2.0/次
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">🍳</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">大厨AI</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.6</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">根据冰箱食材推荐菜谱， step-by-step 指导</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 9.1万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    0.5/次
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="ai-market-card">
+                            <div class="ai-market-header">
+                                <div class="ai-market-avatar">💼</div>
+                                <div class="ai-market-info">
+                                    <div class="ai-market-name">面试助手</div>
+                                    <div class="ai-market-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.8</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ai-market-desc">模拟技术面试，提供面经和答题技巧</div>
+                            <div class="ai-market-footer">
+                                <span class="ai-market-stats">已服务 4.6万人</span>
+                                <span class="ai-market-price">
+                                    <i class="fas fa-bolt"></i>
+                                    1.0/次
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面5：我的 ==================== -->
+            <div class="page" id="page-profile">
+                <!-- 个人信息头部 -->
+                <div class="profile-header">
+                    <div class="profile-user">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-info">
+                            <h3>元峰</h3>
+                            <div class="profile-meta">
+                                <span><i class="fas fa-mars"></i> 22岁</span>
+                                <span><i class="fas fa-map-marker-alt"></i> 中国·上海</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 算力余额 -->
+                    <div class="power-balance-card">
+                        <div>
+                            <div class="power-balance-label">当前算力余额</div>
+                            <div class="power-balance-value">
+                                <i class="fas fa-bolt"></i>
+                                2450
+                            </div>
+                        </div>
+                        <button class="claim-btn">领算力</button>
+                    </div>
+                </div>
+
+                <!-- VIP卡片 -->
+                <div class="vip-card">
+                    <div class="vip-header">
+                        <div class="vip-icon"><i class="fas fa-crown"></i></div>
+                        <div class="vip-title">口信会员</div>
+                    </div>
+                    <div class="vip-desc">解锁高级虚拟人 · 算力95折 · 专属客服</div>
+                    <button class="vip-btn">立即开通</button>
+                </div>
+
+                <!-- 我的虚拟人 -->
+                <div class="my-ais-section">
+                    <div class="section-header">
+                        <h3>🤖 我的虚拟人</h3>
+                        <span class="manage-btn">管理</span>
+                    </div>
+                    <div class="my-ai-list">
+                        <div class="my-ai-item">
+                            <div class="my-ai-avatar">👩‍💼</div>
+                            <div class="my-ai-info">
+                                <div class="my-ai-name">安然-Vivian</div>
+                                <div class="my-ai-type">个人助理 · 日程管理</div>
+                            </div>
+                            <div class="my-ai-actions">
+                                <div class="my-ai-action"><i class="fas fa-edit"></i></div>
+                                <div class="my-ai-action"><i class="fas fa-share-alt"></i></div>
+                            </div>
+                        </div>
+                        <div class="my-ai-item">
+                            <div class="my-ai-avatar">🌸</div>
+                            <div class="my-ai-info">
+                                <div class="my-ai-name">冬妮</div>
+                                <div class="my-ai-type">情感陪伴 · 倾听者</div>
+                            </div>
+                            <div class="my-ai-actions">
+                                <div class="my-ai-action"><i class="fas fa-edit"></i></div>
+                                <div class="my-ai-action"><i class="fas fa-share-alt"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设置列表 -->
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-icon"><i class="fas fa-wallet"></i></div>
+                        <span class="setting-text">我的钱包</span>
+                        <i class="fas fa-chevron-right setting-arrow"></i>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-icon"><i class="fas fa-history"></i></div>
+                        <span class="setting-text">算力记录</span>
+                        <i class="fas fa-chevron-right setting-arrow"></i>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-icon"><i class="fas fa-star"></i></div>
+                        <span class="setting-text">我的收藏</span>
+                        <i class="fas fa-chevron-right setting-arrow"></i>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-icon"><i class="fas fa-cog"></i></div>
+                        <span class="setting-text">设置</span>
+                        <i class="fas fa-chevron-right setting-arrow"></i>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-icon"><i class="fas fa-question-circle"></i></div>
+                        <span class="setting-text">帮助与反馈</span>
+                        <i class="fas fa-chevron-right setting-arrow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 页面6：算力中心 ==================== -->
+            <div class="page" id="page-power">
+                <div class="power-center-header">
+                    <div class="power-center-title">算力中心</div>
+                    <div class="power-big-display">
+                        <i class="fas fa-bolt"></i>
+                        2450
+                    </div>
+                    <div class="power-center-subtitle">当前算力余额</div>
+                </div>
+
+                <!-- 每日任务 -->
+                <div class="power-tasks">
+                    <h3>📋 每日任务</h3>
+                    <div class="task-card">
+                        <div class="task-icon"><i class="fas fa-sign-in-alt"></i></div>
+                        <div class="task-info">
+                            <div class="task-name">每日签到</div>
+                            <div class="task-reward">+50 算力</div>
+                        </div>
+                        <button class="task-btn">领取</button>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon"><i class="fas fa-comment"></i></div>
+                        <div class="task-info">
+                            <div class="task-name">与虚拟人对话</div>
+                            <div class="task-reward">+30 算力</div>
+                        </div>
+                        <button class="task-btn">去完成</button>
+                    </div>
+                    <div class="task-card">
+                        <div class="task-icon"><i class="fas fa-share-alt"></i></div>
+                        <div class="task-info">
+                            <div class="task-name">分享生成内容</div>
+                            <div class="task-reward">+20 算力</div>
+                        </div>
+                        <button class="task-btn completed">已完成</button>
+                    </div>
+                </div>
+
+                <!-- 充值选项 -->
+                <div class="power-recharge">
+                    <h3>⚡ 快速充值</h3>
+                    <div class="recharge-options">
+                        <div class="recharge-option">
+                            <div class="recharge-power">500</div>
+                            <div class="recharge-price">¥6</div>
+                        </div>
+                        <div class="recharge-option popular">
+                            <div class="recharge-power">1200</div>
+                            <div class="recharge-price">¥12</div>
+                        </div>
+                        <div class="recharge-option">
+                            <div class="recharge-power">3000</div>
+                            <div class="recharge-price">¥30</div>
+                        </div>
+                        <div class="recharge-option">
+                            <div class="recharge-power">5000</div>
+                            <div class="recharge-price">¥48</div>
+                        </div>
+                        <div class="recharge-option">
+                            <div class="recharge-power">10000</div>
+                            <div class="recharge-price">¥88</div>
+                        </div>
+                        <div class="recharge-option">
+                            <div class="recharge-power">20000</div>
+                            <div class="recharge-price">¥168</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('messages', this)">
+                <i class="fas fa-comment nav-icon"></i>
+                <span class="nav-label">消息</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('contacts', this)">
+                <i class="fas fa-address-book nav-icon"></i>
+                <span class="nav-label">联系人</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('explore', this)">
+                <i class="fas fa-compass nav-icon"></i>
+                <span class="nav-label">探索</span>
+            </div>
+            <div class="nav-item power-center" onclick="switchTab('power', this)">
+                <div class="power-center-btn">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <span class="nav-label">算力</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile', this)">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 口信·页面切换与交互逻辑
+        // ============================================
+
+        /**
+         * 切换底部导航标签
+         * @param {string} pageId - 目标页面ID（不含'page-'前缀）
+         * @param {HTMLElement} navItem - 点击的导航项元素
+         */
+        function switchTab(pageId, navItem) {
+            // 隐藏所有页面
+            const allPages = document.querySelectorAll('.page');
+            allPages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 显示目标页面
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // 更新导航项激活状态
+            const allNavItems = document.querySelectorAll('.nav-item');
+            allNavItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            navItem.classList.add('active');
+        }
+
+        /**
+         * 进入聊天详情页
+         * 从消息列表点击虚拟人卡片时调用
+         */
+        function goToChat() {
+            // 隐藏消息页
+            document.getElementById('page-messages').classList.remove('active');
+            // 显示聊天页
+            document.getElementById('page-chat').classList.add('active');
+        }
+
+        /**
+         * 返回上一页（从聊天页返回消息列表）
+         */
+        function goBack() {
+            // 隐藏所有页面
+            const allPages = document.querySelectorAll('.page');
+            allPages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 显示消息列表页
+            document.getElementById('page-messages').classList.add('active');
+
+            // 更新导航状态
+            const allNavItems = document.querySelectorAll('.nav-item');
+            allNavItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            // 激活消息导航项
+            allNavItems[0].classList.add('active');
+        }
+
+        // 分类标签切换交互
+        document.querySelectorAll('.category-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.querySelector('.status-bar .time').textContent = hours + ':' + minutes;
+        }
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // 输入框焦点效果（聊天页）
+        const inputField = document.querySelector('.input-field');
+        if (inputField) {
+            inputField.addEventListener('focus', function() {
+                document.querySelector('.input-area').style.boxShadow = '0 8px 30px rgba(42, 109, 244, 0.2)';
+            });
+            inputField.addEventListener('blur', function() {
+                document.querySelector('.input-area').style.boxShadow = '';
+            });
+        }
+    </script>
+</body>
+</html>
